@@ -1,16 +1,28 @@
 #include <SD.h>
 #include "RTClib.h"
 #include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+
+#define BME_SCK 13
+#define BME_MISO 12
+#define BME_MOSI 11
+#define BME_CS 10
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+//Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
+Adafruit_BME280 bme;
 
 RTC_PCF8523 rtc;
 
-const int ledPin=13; //REMOVE FOR MAIN FLIGHT
-const int buttonPin = 11; //RESET BUTTON
+const int ledPin=5; //REMOVE FOR MAIN FLIGHT
+const int buttonPin = 4; //RESET BUTTON
 
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[5] = {45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[5] = {1,2,3,4,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
 String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
 
 byte relayPin[4] = {2,7,8,10};
@@ -43,6 +55,12 @@ void setup() {
   
   for(int i = 0; i < 4; i++)  pinMode(relayPin[i],OUTPUT);
 
+  bool status;
+  status = bme.begin();  
+    if (!status) {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        
+    }
 }
 
 void loop() {
@@ -125,15 +143,36 @@ void loop() {
   Serial.print(':');
   Serial.print(now.second(), DEC);
   Serial.println();
-
- delay(4000); 
+  printValues();
+  delay(2000); 
 
 
 //REMOVE LED CODE BEFORE LAUNCH
  for(int j=0;j<stage;j++){
   digitalWrite(ledPin, HIGH);
-  delay(500);
+  delay(100);
   digitalWrite(ledPin, LOW);
-  delay(500);
+  delay(100);
  }
+}
+
+void printValues() {
+    Serial.print("Temperature = ");
+    Serial.print(bme.readTemperature());
+    Serial.println(" *C");
+
+    Serial.print("Pressure = ");
+
+    Serial.print(bme.readPressure() / 100.0F);
+    Serial.println(" hPa");
+
+    Serial.print("Approx. Altitude = ");
+    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.println(" m");
+
+    Serial.print("Humidity = ");
+    Serial.print(bme.readHumidity());
+    Serial.println(" %");
+
+    Serial.println();
 }
