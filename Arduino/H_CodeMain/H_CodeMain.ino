@@ -32,6 +32,7 @@ byte relayPin[4] = {2,7,8,10};
  //D8 -> RELAY3 [Valve3]
  //D10 -> RELAY4 [NoValve]
 
+//ADD SD CARD STUFF HERE
 
 void setup() {
   // put your setup code here, to run once:
