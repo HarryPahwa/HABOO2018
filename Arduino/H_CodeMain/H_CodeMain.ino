@@ -10,7 +10,7 @@ const int buttonPin = 11; //RESET BUTTON
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[5] = {10,11,12,13,1000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[5] = {45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
 String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
 
 byte relayPin[4] = {2,7,8,10};
@@ -53,7 +53,7 @@ void loop() {
     // ADD THREE VALVE CLICK TEST
     Serial.println("RESET RESET RESET");
     delay(2000);
-    for(i = 0; i < 4; i++)  {
+    for(int i = 0; i < 4; i++)  {
      digitalWrite(relayPin[i],HIGH);
      delay(500);
      digitalWrite(relayPin[i],LOW);
@@ -108,7 +108,7 @@ void loop() {
 
   Serial.print("Stage ");
   Serial.print(stage);
-  Serial.print(': ');
+  Serial.print(": ");
   Serial.print(stageNames[stage]);
   Serial.println();
   Serial.print(now.year(), DEC);
