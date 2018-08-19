@@ -4,11 +4,13 @@
 
 RTC_PCF8523 rtc;
 
+const int ledPin=13;
 const int buttonPin = 11;
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[] = {45, 195, 555, 675}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[] = {10,11,12,13,1000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
 
 void setup() {
   // put your setup code here, to run once:
@@ -28,6 +30,7 @@ void setup() {
 
   //Initialize Button
   pinMode(buttonPin, INPUT);
+  pinMode(ledPin, OUTPUT);
   
   
 }
@@ -37,6 +40,7 @@ void loop() {
   buttonState = digitalRead(buttonPin);
 
   if (buttonState == HIGH) {
+    // ADD THREE VALVE CLICK TEST
     //reset RTC
     rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
   }
@@ -54,9 +58,11 @@ void loop() {
     }
   }
 
-  Serial.print("stage: ");
+  Serial.print("Stage ");
   Serial.print(stage);
-  Serial.print('/');
+  Serial.print(': ');
+  Serial.print(stageNames[stage]);
+  Serial.println();
   Serial.print(now.year(), DEC);
   Serial.print('/');
   Serial.print(now.month(), DEC);
@@ -72,5 +78,14 @@ void loop() {
   Serial.print(now.second(), DEC);
   Serial.println();
 
- delay(10000); 
+ delay(4000); 
+
+
+//REMOVE LED CODE BEFORE LAUNCH
+ for(int j=0;j<stage;j++){
+  digitalWrite(ledPin, HIGH);
+  delay(500);
+  digitalWrite(ledPin, LOW);
+  delay(500);
+ }
 }
