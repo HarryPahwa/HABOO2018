@@ -3,6 +3,8 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <TimeLib.h>
+#include <EEPROM.h>
 
 //#define BME_SCK 13
 //#define BME_MISO 12
@@ -16,7 +18,7 @@ Adafruit_BME280 bme;
 
 RTC_PCF8523 rtc;
 
-const int ledPin=5; //REMOVE FOR MAIN FLIGHT
+const int ledPin=13; //REMOVE FOR MAIN FLIGHT
 const int buttonPin = 4; //RESET BUTTON
 
 int buttonState = 0;
@@ -62,6 +64,8 @@ void setup() {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
         
     }
+
+  loadCurrentTime();
 }
 
 void loop() {
@@ -80,12 +84,13 @@ void loop() {
    }
     
     //reset RTC
-    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+    //rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+    setTime(0, 0, 0, 1, 1, 2018);
   }
 
-  DateTime now = rtc.now();
+  //DateTime now = rtc.now();
 
-  timeInMin = now.hour()*60 + now.minute();
+  timeInMin = hour()*60 + minute();
 
   for(int i=0;i<(sizeof(flightSched)/sizeof(int));i++)
   {
@@ -130,28 +135,29 @@ void loop() {
   Serial.print(": ");
   Serial.print(stageNames[stage]);
   Serial.println();
-  Serial.print(now.year(), DEC);
+  Serial.print(year(), DEC);
   Serial.print('/');
-  Serial.print(now.month(), DEC);
+  Serial.print(month(), DEC);
   Serial.print('/');
-  Serial.print(now.day(), DEC);
+  Serial.print(day(), DEC);
   Serial.print(" (");
   
   Serial.print(") ");
-  Serial.print(now.hour(), DEC);
+  Serial.print(hour(), DEC);
   Serial.print(':');
-  Serial.print(now.minute(), DEC);
+  Serial.print(minute(), DEC);
   Serial.print(':');
-  Serial.print(now.second(), DEC);
+  Serial.print(second(), DEC);
   Serial.println();
   printValues();
-  delay(2000); 
-
+  delay(5000); 
+  saveCurrentTime();
 
 //REMOVE LED CODE BEFORE LAUNCH
  for(int j=0;j<stage;j++){
   digitalWrite(ledPin, HIGH);
   delay(100);
+  
   digitalWrite(ledPin, LOW);
   delay(100);
  }
@@ -177,3 +183,30 @@ void printValues() {
 
     Serial.println();
 }
+
+void saveCurrentTime() {
+  EEPROM_writeInt(9, hour()); //Writes the hour in the position 9 of the EEPROM 
+  EEPROM_writeInt(11, minute()); //Writes the minutes in the position 11 of the EEPROM 
+  EEPROM_writeInt(13, second()); //Writes the seconds in the position 13 of the EEPROM 
+}
+
+void EEPROM_writeInt(int ee, int value)
+{
+    byte* p = (byte*)(void*)&value;
+    for (int i = 0; i < sizeof(value); i++)
+        EEPROM.write(ee++, *p++);
+}
+
+void loadCurrentTime() {  
+    setTime(EEPROM_readInt(9,2),EEPROM_readInt(11,2),EEPROM_readInt(13,2),1,1,2018);
+}
+
+int EEPROM_readInt(int ee, int size)
+{
+    int value = 0.0;
+    byte* p = (byte*)(void*)&value;
+    for (int i = 0; i < size; i++)
+        *p++ = EEPROM.read(ee++);
+    return value;
+}
+
