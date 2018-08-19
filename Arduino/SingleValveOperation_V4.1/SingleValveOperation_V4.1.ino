@@ -17,6 +17,8 @@ unsigned long GroundRefTime; // Reference time to calculate time passed on the g
 int address = 0; // This integer will be called in the EEPROM writing functions down below
 
 
+int flightSched[] = {45, 195, 555, 675}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+
 // The following function will wait until the desired altitude is reached and then set the EEPROM address10 = 0
  void GroundTimer()
  {
