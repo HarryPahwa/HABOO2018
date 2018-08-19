@@ -4,13 +4,22 @@
 
 RTC_PCF8523 rtc;
 
-const int ledPin=13;
-const int buttonPin = 11;
+const int ledPin=13; //REMOVE FOR MAIN FLIGHT
+const int buttonPin = 11; //RESET BUTTON
+
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[] = {10,11,12,13,1000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[5] = {10,11,12,13,1000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
 String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
+
+byte relayPin[4] = {2,7,8,10};
+
+ //D2 -> RELAY1 [Valve1]
+ //D7 -> RELAY2 [Valve2]
+ //D8 -> RELAY3 [Valve3]
+ //D10 -> RELAY4 [NoValve]
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -28,11 +37,12 @@ void setup() {
     rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
   }
 
-  //Initialize Button
+  //Initialize Button/LED
   pinMode(buttonPin, INPUT);
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin, OUTPUT); //REMOVE BEFORE ACTUAL FLIGHT
   
-  
+  for(int i = 0; i < 4; i++)  pinMode(relayPin[i],OUTPUT);
+
 }
 
 void loop() {
@@ -41,6 +51,15 @@ void loop() {
 
   if (buttonState == HIGH) {
     // ADD THREE VALVE CLICK TEST
+    Serial.println("RESET RESET RESET");
+    delay(2000);
+    for(i = 0; i < 4; i++)  {
+     digitalWrite(relayPin[i],HIGH);
+     delay(500);
+     digitalWrite(relayPin[i],LOW);
+     delay(500);
+   }
+    
     //reset RTC
     rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
   }
@@ -57,6 +76,35 @@ void loop() {
       break;
     }
   }
+
+
+  switch (stage) {
+    case 0:
+    case 1:
+      for(int i=0;i<4;i++) digitalWrite(relayPin[i],LOW);
+      break;
+    case 2:
+      digitalWrite(relayPin[0],HIGH);
+      digitalWrite(relayPin[1],HIGH);
+      digitalWrite(relayPin[2],LOW);
+      digitalWrite(relayPin[3],LOW);
+      break;
+    case 3:
+      digitalWrite(relayPin[0],HIGH);
+      digitalWrite(relayPin[1],LOW);
+      digitalWrite(relayPin[2],HIGH);
+      digitalWrite(relayPin[3],LOW);
+      break;
+    case 4:
+      for(int i=0;i<4;i++) digitalWrite(relayPin[i],LOW);
+      break;
+  }
+  
+
+
+
+
+//PRINTING JARGON -> USELESS STUFF
 
   Serial.print("Stage ");
   Serial.print(stage);
