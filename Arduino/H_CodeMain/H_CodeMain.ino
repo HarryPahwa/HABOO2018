@@ -24,7 +24,7 @@ const int buttonPin = 4; //RESET BUTTON
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[5] = {5,12,28,46,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[5] = {1,2,3,4,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
 String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
 
 byte relayPin[4] = {2,7,8,10};
@@ -47,10 +47,10 @@ void setup() {
     while (1);
   }
 
-  if (! rtc.initialized()) {
-    Serial.println("RTC is NOT running!");
-    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
-  }
+//  if (! rtc.initialized()) {
+//    Serial.println("RTC is NOT running!");
+//    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+//  }
 
   //Initialize Button/LED
   pinMode(buttonPin, INPUT);
@@ -71,7 +71,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   buttonState = digitalRead(buttonPin);
-
+//  Serial.println(buttonState);
   if (buttonState == HIGH) {
     // ADD THREE VALVE CLICK TEST
     Serial.println("RESET RESET RESET");
