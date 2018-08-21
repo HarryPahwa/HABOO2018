@@ -3,20 +3,22 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <TimeLib.h>
+#include <EEPROM.h>
 
-#define BME_SCK 13
-#define BME_MISO 12
-#define BME_MOSI 11
-#define BME_CS 10
+//#define BME_SCK 13
+//#define BME_MISO 12
+//#define BME_MOSI 11
+//#define BME_CS 10
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 //Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
-Adafruit_BME280 bme;
+//Adafruit_BME280 bme;
 
 RTC_PCF8523 rtc;
 
-const int ledPin=5; //REMOVE FOR MAIN FLIGHT
+const int ledPin=13; //REMOVE FOR MAIN FLIGHT
 const int buttonPin = 4; //RESET BUTTON
 
 int buttonState = 0;
@@ -45,10 +47,10 @@ void setup() {
     while (1);
   }
 
-  if (! rtc.initialized()) {
-    Serial.println("RTC is NOT running!");
-    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
-  }
+//  if (! rtc.initialized()) {
+//    Serial.println("RTC is NOT running!");
+//    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+//  }
 
   //Initialize Button/LED
   pinMode(buttonPin, INPUT);
@@ -56,36 +58,40 @@ void setup() {
   
   for(int i = 0; i < 4; i++)  pinMode(relayPin[i],OUTPUT);
 
-  bool status;
-  status = bme.begin();  
-    if (!status) {
-        Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        
-    }
+//  bool status;
+//  status = bme.begin();  
+//    if (!status) {
+//        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+//        
+//    }
+
+  loadCurrentTime();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   buttonState = digitalRead(buttonPin);
-
+//  Serial.println(buttonState);
   if (buttonState == HIGH) {
     // ADD THREE VALVE CLICK TEST
     Serial.println("RESET RESET RESET");
     delay(2000);
+    for(int i=0;i<4;i++) digitalWrite(relayPin[i],LOW);
     for(int i = 0; i < 4; i++)  {
      digitalWrite(relayPin[i],HIGH);
-     delay(500);
+     delay(1000);
      digitalWrite(relayPin[i],LOW);
-     delay(500);
+     delay(1000);
    }
     
     //reset RTC
-    rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+    //rtc.adjust(DateTime(2018, 1, 1, 0, 0, 0));
+    setTime(0, 0, 0, 1, 1, 2018);
   }
 
-  DateTime now = rtc.now();
+  //DateTime now = rtc.now();
 
-  timeInMin = now.hour()*60 + now.minute();
+  timeInMin = hour()*60 + minute();
 
   for(int i=0;i<(sizeof(flightSched)/sizeof(int));i++)
   {
@@ -130,50 +136,78 @@ void loop() {
   Serial.print(": ");
   Serial.print(stageNames[stage]);
   Serial.println();
-  Serial.print(now.year(), DEC);
+  Serial.print(year(), DEC);
   Serial.print('/');
-  Serial.print(now.month(), DEC);
+  Serial.print(month(), DEC);
   Serial.print('/');
-  Serial.print(now.day(), DEC);
+  Serial.print(day(), DEC);
   Serial.print(" (");
   
   Serial.print(") ");
-  Serial.print(now.hour(), DEC);
+  Serial.print(hour(), DEC);
   Serial.print(':');
-  Serial.print(now.minute(), DEC);
+  Serial.print(minute(), DEC);
   Serial.print(':');
-  Serial.print(now.second(), DEC);
+  Serial.print(second(), DEC);
   Serial.println();
-  printValues();
-  delay(2000); 
-
+//  printValues();
+  delay(5000); 
+  saveCurrentTime();
 
 //REMOVE LED CODE BEFORE LAUNCH
  for(int j=0;j<stage;j++){
   digitalWrite(ledPin, HIGH);
   delay(100);
+  
   digitalWrite(ledPin, LOW);
   delay(100);
  }
 }
 
-void printValues() {
-    Serial.print("Temperature = ");
-    Serial.print(bme.readTemperature());
-    Serial.println(" *C");
+//void printValues() {
+//    Serial.print("Temperature = ");
+//    Serial.print(bme.readTemperature());
+//    Serial.println(" *C");
+//
+//    Serial.print("Pressure = ");
+//
+//    Serial.print(bme.readPressure() / 100.0F);
+//    Serial.println(" hPa");
+//
+//    Serial.print("Approx. Altitude = ");
+//    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+//    Serial.println(" m");
+//
+//    Serial.print("Humidity = ");
+//    Serial.print(bme.readHumidity());
+//    Serial.println(" %");
+//
+//    Serial.println();
+//}
 
-    Serial.print("Pressure = ");
-
-    Serial.print(bme.readPressure() / 100.0F);
-    Serial.println(" hPa");
-
-    Serial.print("Approx. Altitude = ");
-    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-    Serial.println(" m");
-
-    Serial.print("Humidity = ");
-    Serial.print(bme.readHumidity());
-    Serial.println(" %");
-
-    Serial.println();
+void saveCurrentTime() {
+  EEPROM_writeInt(9, hour()); //Writes the hour in the position 9 of the EEPROM 
+  EEPROM_writeInt(11, minute()); //Writes the minutes in the position 11 of the EEPROM 
+  EEPROM_writeInt(13, second()); //Writes the seconds in the position 13 of the EEPROM 
 }
+
+void EEPROM_writeInt(int ee, int value)
+{
+    byte* p = (byte*)(void*)&value;
+    for (int i = 0; i < sizeof(value); i++)
+        EEPROM.write(ee++, *p++);
+}
+
+void loadCurrentTime() {  
+    setTime(EEPROM_readInt(9,2),EEPROM_readInt(11,2),EEPROM_readInt(13,2),1,1,2018);
+}
+
+int EEPROM_readInt(int ee, int size)
+{
+    int value = 0.0;
+    byte* p = (byte*)(void*)&value;
+    for (int i = 0; i < size; i++)
+        *p++ = EEPROM.read(ee++);
+    return value;
+}
+
