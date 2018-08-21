@@ -24,7 +24,20 @@ const int buttonPin = 4; //RESET BUTTON
 int buttonState = 0;
 int stage = 0;
 int timeInMin=0;
-int flightSched[5] = {1,2,3,4,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+
+
+
+//CHANGE THIS BROOOOOO
+
+int flightSched[5] = {5,15,60,100,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+
+// First number: Time on ground
+// Second: Time Ascending
+// Third: Valve 1+2 open
+// Fourth: Valve 1+3 open
+// Fifth: Leave it alone
+
+
 String stageNames[5]={"On the ground, captain", "Beam Me Up, Scotty", "She's giving all she got", "Let's replace the thrusters", "Calm of the Wind"};
 
 byte relayPin[4] = {2,7,8,10};
