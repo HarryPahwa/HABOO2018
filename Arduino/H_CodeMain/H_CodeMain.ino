@@ -29,7 +29,7 @@ int timeInMin=0;
 
 //CHANGE THIS BROOOOOO
 
-int flightSched[5] = {5,15,60,100,10000};//{45, 195, 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
+int flightSched[5] = {5,15,60,100,10000};//{45, 200 , 555, 675, 10000}; // 45 150 360 (valve 1+2 open) 120 (valve 1+3 open)
 
 // First number: Time on ground
 // Second: Time Ascending
@@ -90,6 +90,13 @@ void loop() {
     Serial.println("RESET RESET RESET");
     delay(2000);
     for(int i=0;i<4;i++) digitalWrite(relayPin[i],LOW);
+    for(int j=0;j<20;j++){
+      digitalWrite(ledPin, HIGH);
+      delay(100);
+      
+      digitalWrite(ledPin, LOW);
+      delay(100);
+     } 
     for(int i = 0; i < 4; i++)  {
      digitalWrite(relayPin[i],HIGH);
      delay(1000);
