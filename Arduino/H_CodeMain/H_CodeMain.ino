@@ -6,6 +6,10 @@
 #include <TimeLib.h>
 #include <EEPROM.h>
 
+
+//Code Author: Harry Singh, University of Alberta 2018
+
+
 //#define BME_SCK 13
 //#define BME_MISO 12
 //#define BME_MOSI 11
@@ -90,13 +94,16 @@ void loop() {
     Serial.println("RESET RESET RESET");
     delay(2000);
     for(int i=0;i<4;i++) digitalWrite(relayPin[i],LOW);
-    for(int j=0;j<20;j++){
-      digitalWrite(ledPin, HIGH);
-      delay(100);
-      
-      digitalWrite(ledPin, LOW);
-      delay(100);
-     } 
+    digitalWrite(ledPin, HIGH);
+    delay(20000);
+    digitalWrite(ledPin, LOW);
+//    for(int j=0;j<20;j++){
+//      digitalWrite(ledPin, HIGH);
+//      delay(100);
+//      
+//      digitalWrite(ledPin, LOW);
+//      delay(100);
+//     } 
     for(int i = 0; i < 4; i++)  {
      digitalWrite(relayPin[i],HIGH);
      delay(1000);
